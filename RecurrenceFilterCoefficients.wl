@@ -16,13 +16,13 @@ Begin["`Private`"]
 
 ClearAll[compilationTarget, runtimeOptions];
 compilationTarget = "C";
-runtimeOptions = {
+runtimeOptions = {"Speed",
   "CatchMachineOverflow" -> False,
-  "CatchMachineIntegerOverflow" -> False
-  "CompareWithTolerance" -> False
+  "CatchMachineIntegerOverflow" -> False,
+  "CompareWithTolerance" -> False,
   "EvaluateSymbolically" -> False};
 
-MVHighpassCoefficients =
+With[{ro = runtimeOptions}, MVHighpassCoefficients =
   Compile[{{w, _Real}, {Q, _Real}},
    With[{q = .5/Q, phi1 = With[{x = Sin[2 Pi w*.5]}, x x]}, 
     With[{sqrta2 = Exp[w*q*(-2 Pi)], phi0 = 1 - phi1}, 
@@ -37,9 +37,9 @@ MVHighpassCoefficients =
                With[{x = (a2 + 1 - a1)}, x x]) + (a2*(-4)*
                phi2)])}, {{1, a1, a2}, {b0, -2 b0, b0}}]]]], 
   CompilationTarget -> compilationTarget,
-  RuntimeOptions -> runtimeOptions];
+  RuntimeOptions -> ro]];
 
-MVBandshelfCoefficients = 
+With[{ro = runtimeOptions}, MVBandshelfCoefficients = 
   Compile[{{w, _Real}, {Q, _Real}, {A, _Real}}, 
    With[{q = .5/(Q Sqrt[A]), phi1 = With[{x = Sin[Pi w]}, x x]}, 
     With[{sqrta2 = Exp[w*q*(-2 Pi)], phi0 = 1 - phi1}, 
@@ -61,16 +61,16 @@ MVBandshelfCoefficients =
              With[{b2 = B2/(-4 b0)}, 
              {{1, a1, a2}, {b0, b1, b2}}]]]]]]]]]]],
   CompilationTarget -> compilationTarget,
-  RuntimeOptions -> runtimeOptions];
+  RuntimeOptions -> ro]];
 
-RBJLowpassCoefficients = 
+With[{ro = runtimeOptions}, RBJLowpassCoefficients = 
   Compile[{{w, _Real}, {Q, _Real}}, 
    With[{cs = Cos[2 Pi w], alpha = (.5/Q) Sin[2 Pi w]}, 
     With[{b1 = 1 - cs}, 
      With[{b0 = .5 b1, a0 = alpha + 1, a1 = -2 cs, 
        a2 = 1 - alpha}, {{a0, a1, a2}, {b0, b1, b0}}]]], 
   CompilationTarget -> compilationTarget,
-  RuntimeOptions -> runtimeOptions];
+  RuntimeOptions -> ro]];
 
 End[]
 
