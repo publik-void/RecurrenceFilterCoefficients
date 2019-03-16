@@ -14,7 +14,16 @@ computes coefficients for a 2nd-order Martin Vicanek style bandshelf filter."
 
 Begin["`Private`"]
 
-MVHighpassCoefficients = Compile[{{w, _Real}, {Q, _Real}},
+ClearAll[compilationTarget, runtimeOptions];
+compilationTarget = "C";
+runtimeOptions = {
+  "CatchMachineOverflow" -> False,
+  "CatchMachineIntegerOverflow" -> False
+  "CompareWithTolerance" -> False
+  "EvaluateSymbolically" -> False};
+
+MVHighpassCoefficients =
+  Compile[{{w, _Real}, {Q, _Real}},
    With[{q = .5/Q, phi1 = With[{x = Sin[2 Pi w*.5]}, x x]}, 
     With[{sqrta2 = Exp[w*q*(-2 Pi)], phi0 = 1 - phi1}, 
      With[{phi2 = 4*phi0*phi1, 
@@ -27,7 +36,8 @@ MVHighpassCoefficients = Compile[{{w, _Real}, {Q, _Real}},
                  x x])) + (phi1*
                With[{x = (a2 + 1 - a1)}, x x]) + (a2*(-4)*
                phi2)])}, {{1, a1, a2}, {b0, -2 b0, b0}}]]]], 
-   CompilationTarget -> "C"];
+  CompilationTarget -> compilationTarget,
+  RuntimeOptions -> runtimeOptions];
 
 MVBandshelfCoefficients = 
   Compile[{{w, _Real}, {Q, _Real}, {A, _Real}}, 
@@ -49,7 +59,9 @@ MVBandshelfCoefficients =
             With[{b0 = .5 (W + Sqrt[B2 + W W]), 
               b1 = .5 (sqrtB0 - sqrtB1)}, 
              With[{b2 = B2/(-4 b0)}, 
-             {{1, a1, a2}, {b0, b1, b2}}]]]]]]]]]]], CompilationTarget -> "C"];
+             {{1, a1, a2}, {b0, b1, b2}}]]]]]]]]]]],
+  CompilationTarget -> compilationTarget,
+  RuntimeOptions -> runtimeOptions];
 
 RBJLowpassCoefficients = 
   Compile[{{w, _Real}, {Q, _Real}}, 
@@ -57,7 +69,8 @@ RBJLowpassCoefficients =
     With[{b1 = 1 - cs}, 
      With[{b0 = .5 b1, a0 = alpha + 1, a1 = -2 cs, 
        a2 = 1 - alpha}, {{a0, a1, a2}, {b0, b1, b0}}]]], 
-   CompilationTarget -> "C"];
+  CompilationTarget -> compilationTarget,
+  RuntimeOptions -> runtimeOptions];
 
 End[]
 
